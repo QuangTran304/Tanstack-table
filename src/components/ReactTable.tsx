@@ -1,8 +1,10 @@
 import { Box, Typography } from "@silverstein-properties/inspirelabs-ui";
 import {
+  SortingState,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
+  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import { useState } from "react";
@@ -39,12 +41,17 @@ const columns = [
 
 const ReactTable = () => {
   const [data] = useState(() => [...Data]);
-  // const renderer = useReducer(() => ({}), {})[1];
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   const table = useReactTable({
     data,
     columns,
+    state: {
+      sorting,
+    },
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     columnResizeMode: "onChange",
   });
 
@@ -59,6 +66,7 @@ const ReactTable = () => {
                   key={header.id}
                   colSpan={header.colSpan}
                   width={header.getSize()}
+                  onClick={header.column.getToggleSortingHandler()}
                 >
                   {header.isPlaceholder
                     ? null
@@ -66,7 +74,10 @@ const ReactTable = () => {
                         header.column.columnDef.header,
                         header.getContext()
                       )}
-
+                  {{
+                    asc: " 👆",
+                    desc: " 👇",
+                  }[header.column.getIsSorted() as string] ?? null}
                   <Box
                     onMouseDown={header.getResizeHandler()}
                     onTouchStart={header.getResizeHandler()}
