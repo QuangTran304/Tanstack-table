@@ -1,4 +1,4 @@
-import { Typography } from "@silverstein-properties/inspirelabs-ui";
+import { Box, Typography } from "@silverstein-properties/inspirelabs-ui";
 import {
   createColumnHelper,
   flexRender,
@@ -6,34 +6,34 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-} from "@mui/material";
 import { Data, type Task } from "../data";
+import {
+  StyledTable,
+  StyledTableData,
+  StyledTableHead,
+} from "./ReactTable.styles";
 
 const columnHelper = createColumnHelper<Task>();
 
 const columns = [
   columnHelper.accessor("task", {
     cell: (info) => info.getValue(),
-    header: () => <Typography variant="labelMedium">Task</Typography>,
+    header: () => <Typography variant="labelLarge">Task</Typography>,
+    size: 350,
   }),
   columnHelper.accessor("status", {
     cell: (info) => info.getValue()?.name,
-    header: () => <Typography variant="labelMedium">Status</Typography>,
+    header: () => <Typography variant="labelLarge">Status</Typography>,
+    size: 150,
   }),
   columnHelper.accessor("due", {
     cell: (info) => info.getValue()?.toLocaleTimeString(),
-    header: () => <Typography variant="labelMedium">Due</Typography>,
+    header: () => <Typography variant="labelLarge">Due</Typography>,
+    size: 150,
   }),
   columnHelper.accessor("notes", {
     cell: (info) => info.getValue(),
-    header: () => <Typography variant="labelMedium">Notes</Typography>,
+    header: () => <Typography variant="labelLarge">Notes</Typography>,
   }),
 ];
 
@@ -45,28 +45,20 @@ const ReactTable = () => {
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    columnResizeMode: "onChange",
   });
 
   return (
-    <TableContainer
-      sx={{
-        maxWidth: "60vw",
-        // border: "1px solid lightgray",
-        // borderRadius: "8px",
-      }}
-    >
-      <Table
-        sx={{
-          minWidth: 650,
-        }}
-      >
-        <TableHead>
+    <Box>
+      <StyledTable width={table.getTotalSize()}>
+        <thead>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
+            <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
-                <TableCell
+                <StyledTableHead
                   key={header.id}
-                  sx={{ border: "1px solid lightgray" }}
+                  colSpan={header.colSpan}
+                  width={header.getSize()}
                 >
                   {header.isPlaceholder
                     ? null
@@ -74,25 +66,48 @@ const ReactTable = () => {
                         header.column.columnDef.header,
                         header.getContext()
                       )}
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableHead>
 
-        <TableBody>
-          {table.getRowModel().rows.map((row) => (
-            <TableRow key={row.id}>
-              {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id} sx={{ border: "1px solid lightgray" }}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </TableCell>
+                  <Box
+                    onMouseDown={header.getResizeHandler()}
+                    onTouchStart={header.getResizeHandler()}
+                    sx={{
+                      position: "absolute",
+                      top: "0",
+                      right: "0",
+                      width: "4px",
+                      transform: "translateX(2px)",
+                      height: "100%",
+                      backgroundColor: header.column.getIsResizing()
+                        ? "#2eff31"
+                        : "#27bbff",
+                      cursor: "col-resize",
+                      userSelect: "none",
+                      touchAction: "none",
+                      opacity: header.column.getIsResizing() ? 1 : 0,
+                      "&:hover": {
+                        opacity: 1,
+                      },
+                    }}
+                  />
+                </StyledTableHead>
               ))}
-            </TableRow>
+            </tr>
           ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+        </thead>
+
+        <tbody>
+          {table.getRowModel().rows.map((row) => (
+            <tr key={row.id}>
+              {row.getVisibleCells().map((cell) => (
+                <StyledTableData key={cell.id}>
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </StyledTableData>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </StyledTable>
+    </Box>
   );
 };
 
