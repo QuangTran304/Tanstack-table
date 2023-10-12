@@ -10,6 +10,7 @@ import {
 import { useState } from "react";
 import { Data, type Task } from "../data";
 import {
+  StyledResizeHandle,
   StyledTable,
   StyledTableData,
   StyledTableHead,
@@ -36,8 +37,11 @@ const columns = [
   columnHelper.accessor("notes", {
     cell: (info) => info.getValue(),
     header: () => <Typography variant="labelLarge">Notes</Typography>,
+    size: 350,
   }),
 ];
+
+// =========================================================================================================
 
 const ReactTable = () => {
   const [data] = useState(() => [...Data]);
@@ -66,7 +70,6 @@ const ReactTable = () => {
                   key={header.id}
                   colSpan={header.colSpan}
                   width={header.getSize()}
-                  onClick={header.column.getToggleSortingHandler()}
                 >
                   {header.isPlaceholder
                     ? null
@@ -74,31 +77,27 @@ const ReactTable = () => {
                         header.column.columnDef.header,
                         header.getContext()
                       )}
+                  {header.column.getCanSort() && (
+                    <Typography
+                      onClick={header.column.getToggleSortingHandler()}
+                      variant="labelLarge"
+                    >
+                      {" "}
+                      -
+                    </Typography>
+                  )}
                   {{
                     asc: " 👆",
                     desc: " 👇",
                   }[header.column.getIsSorted() as string] ?? null}
-                  <Box
+
+                  <StyledResizeHandle
                     onMouseDown={header.getResizeHandler()}
                     onTouchStart={header.getResizeHandler()}
-                    sx={{
-                      position: "absolute",
-                      top: "0",
-                      right: "0",
-                      width: "4px",
-                      transform: "translateX(2px)",
-                      height: "100%",
-                      backgroundColor: header.column.getIsResizing()
-                        ? "#2eff31"
-                        : "#27bbff",
-                      cursor: "col-resize",
-                      userSelect: "none",
-                      touchAction: "none",
-                      opacity: header.column.getIsResizing() ? 1 : 0,
-                      "&:hover": {
-                        opacity: 1,
-                      },
-                    }}
+                    backgroundColor={
+                      header.column.getIsResizing() ? "#2eff31" : "#27bbff"
+                    }
+                    opacity={header.column.getIsResizing() ? 1 : 0}
                   />
                 </StyledTableHead>
               ))}

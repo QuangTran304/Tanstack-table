@@ -1,4 +1,4 @@
-import { styled } from "@silverstein-properties/inspirelabs-ui";
+import { Box, styled } from "@silverstein-properties/inspirelabs-ui";
 
 export const StyledTable = styled("table")((props) => ({
   width: props.width || "100%",
@@ -7,11 +7,12 @@ export const StyledTable = styled("table")((props) => ({
 
 export const StyledTableHead = styled("th")(
   ({ width }: { width: number | string }) => ({
-    border: "1px solid #ddd",
+    border: "1px solid lightgray",
     textAlign: "left",
     padding: "8px",
     width: width || "auto",
     position: "relative",
+    backgroundColor: "#dedede",
   })
 );
 
@@ -20,3 +21,28 @@ export const StyledTableData = styled("td")({
   textAlign: "left",
   padding: "8px",
 });
+
+export const StyledResizeHandle = styled(Box)(
+  ({
+    backgroundColor,
+    opacity,
+  }: {
+    backgroundColor: string;
+    opacity: number;
+  }) => ({
+    position: "absolute",
+    top: "0",
+    right: "0",
+    width: "4px",
+    transform: "translateX(2px)",
+    height: "100%",
+    backgroundColor: backgroundColor,
+    cursor: "col-resize",
+    userSelect: "none",
+    touchAction: "none",
+    opacity: opacity,
+    "&:hover": {
+      opacity: 1,
+    },
+  })
+);
