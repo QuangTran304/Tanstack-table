@@ -8,7 +8,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useState } from "react";
-import { Data, type Task } from "../data";
+import { Data, type Task } from "../../data";
 import {
   StyledResizeHandle,
   StyledTable,
