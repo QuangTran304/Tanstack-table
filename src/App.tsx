@@ -1,19 +1,16 @@
-import { Box, Typography } from "@silverstein-properties/inspirelabs-ui";
-import { CustomHeadlessTable } from "./components";
-// import TanstackTable from "./components/ReactTable";
+import { Container, Typography } from "@silverstein-properties/inspirelabs-ui";
+import { TanstackTable } from "./components";
 
 function App() {
   return (
-    <>
+    <Container sx={{ paddingY: "50px" }}>
       <Typography variant="h2" mb={"50px"}>
         Data Table Demo
       </Typography>
 
-      {/* <TanstackTable /> */}
-      <Box sx={{ padding: "35px" }}>
-        <CustomHeadlessTable />
-      </Box>
-    </>
+      {/* <CustomHeadlessTable /> */}
+      <TanstackTable />
+    </Container>
   );
 }
 

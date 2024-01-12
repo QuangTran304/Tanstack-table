@@ -1,5 +1,6 @@
 import { Box, Typography } from "@silverstein-properties/inspirelabs-ui";
 import {
+  RowData,
   SortingState,
   createColumnHelper,
   flexRender,
@@ -7,20 +8,51 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Data, type Task } from "../../data";
 import {
   StyledResizeHandle,
   StyledTable,
   StyledTableData,
   StyledTableHead,
-} from "./ReactTable.styles";
+} from "./TanstackTable.styles";
+import EditableCell from "./EditableCell";
+
+// =========================================================================================================
+
+declare module "@tanstack/react-table" {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface TableMeta<TData extends RowData> {
+    updateData: (rowIndex: number, columnId: string, value: unknown) => void;
+  }
+}
+
+// =========================================================================================================
+
+function useSkipper() {
+  const shouldSkipRef = useRef(true);
+  const shouldSkip = shouldSkipRef.current;
+
+  // Wrap a function with this to skip a pagination reset temporarily
+  const skip = useCallback(() => {
+    shouldSkipRef.current = false;
+  }, []);
+
+  useEffect(() => {
+    shouldSkipRef.current = true;
+  });
+
+  return [shouldSkip, skip] as const;
+}
+
+// =========================================================================================================
 
 const columnHelper = createColumnHelper<Task>();
 
 const columns = [
   columnHelper.accessor("task", {
-    cell: (info) => info.getValue(),
+    // cell: (info) => info.getValue(),
+    cell: (info) => <EditableCell {...info} />,
     header: () => <Typography variant="labelLarge">Task</Typography>,
     size: 350,
   }),
@@ -43,9 +75,12 @@ const columns = [
 
 // =========================================================================================================
 
-const ReactTable = () => {
-  const [data] = useState(() => [...Data]);
+const TanstackTable = () => {
+  const [data, setData] = useState(() => [...Data]);
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [autoResetPageIndex, skipAutoResetPageIndex] = useSkipper();
+
+  // console.log("=====> Table data", data);
 
   const table = useReactTable({
     data,
@@ -57,6 +92,26 @@ const ReactTable = () => {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     columnResizeMode: "onChange",
+    autoResetPageIndex,
+    // Provide our updateData function to our table meta
+    meta: {
+      updateData: (rowIndex, columnId, value) => {
+        // Skip page index reset until after next rerender
+        skipAutoResetPageIndex();
+        setData((old) =>
+          old.map((row, index) => {
+            if (index === rowIndex) {
+              return {
+                ...old[rowIndex], // Spread old data of the row
+                [columnId]: value, // Update the column with new data
+              };
+            }
+            return row;
+          })
+        );
+      },
+    },
+    // debugTable: true,
   });
 
   return (
@@ -71,24 +126,28 @@ const ReactTable = () => {
                   colSpan={header.colSpan}
                   width={header.getSize()}
                 >
+                  {/* ===== Header text/cell ===== */}
                   {header.isPlaceholder
                     ? null
                     : flexRender(
                         header.column.columnDef.header,
                         header.getContext()
                       )}
+                  {/* ===== Header sort button ===== */}
                   {header.column.getCanSort() && (
                     <Typography
                       onClick={header.column.getToggleSortingHandler()}
                       variant="labelLarge"
+                      sx={{ cursor: "pointer" }}
                     >
                       {" "}
-                      -
+                      ~
                     </Typography>
                   )}
+                  {/* ===== Header sort indicator ===== */}
                   {{
-                    asc: " 👆",
-                    desc: " 👇",
+                    asc: " ⬆️",
+                    desc: " ⬇️",
                   }[header.column.getIsSorted() as string] ?? null}
 
                   <StyledResizeHandle
@@ -121,4 +180,4 @@ const ReactTable = () => {
   );
 };
 
-export default ReactTable;
+export default TanstackTable;
